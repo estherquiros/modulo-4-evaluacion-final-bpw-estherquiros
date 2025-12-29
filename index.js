@@ -79,6 +79,33 @@ LEFT JOIN autores ON autores.id = libros.autor_id
   });
 });
 
+app.get("/api/authors", async (req, res) => {
+  console.log("GET /api/authors");
+  // 1. Conectamos con la bbdd
+  const conn = await getConnection();
+
+  // 2. Preparamos una query = SELECT
+  const querySelectAuthors = `SELECT
+  id,
+  nombre,
+  nacionalidad
+FROM autores
+`;
+
+  // 3. Lanzamos la query
+  const [resultados] = await conn.query(querySelectAuthors);
+  console.log(resultados);
+
+  // 4. Cerramos la conexión
+  await conn.end();
+
+  // 5. Responder con los datos
+  res.json({
+    success: true,
+    authors: resultados,
+  });
+});
+
 app.post("/api/authors", async (req, res) => {
   console.log("POST /api/authors");
 
