@@ -78,7 +78,7 @@ LEFT JOIN autores ON autores.id = libros.autor_id
     books: resultados,
   });
 });
-
+//Leer/listar todas las entradas existentes
 app.get("/api/authors", async (req, res) => {
   console.log("GET /api/authors");
   // 1. Conectamos con la bbdd
@@ -106,6 +106,7 @@ FROM autores
   });
 });
 
+//Insentar una entrada en su entidad principal
 app.post("/api/authors", async (req, res) => {
   console.log("POST /api/authors");
 
@@ -154,7 +155,7 @@ app.post("/api/authors", async (req, res) => {
     });
   }
 });
-
+//Actualizar una entrada existente
 app.put("/api/authors/:id", async (req, res) => {
   console.log("PUT /api/authors/:id");
 
@@ -207,7 +208,7 @@ app.put("/api/authors/:id", async (req, res) => {
     });
   }
 });
-
+//Eliminar una entrada existente
 app.delete("/api/books/:id", async (req, res) => {
   console.log("DELETE /api/books/:id");
 
