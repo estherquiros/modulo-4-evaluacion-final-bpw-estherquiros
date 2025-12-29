@@ -127,3 +127,77 @@ app.post("/api/authors", async (req, res) => {
     });
   }
 });
+
+app.put("/api/authors/:id", async (req, res) => {
+  console.log("PUT /api/authors/:id");
+
+  // si no pasamos el parametroid, lanzamos error
+  if (isNaN(parseInt(req.params.id))) {
+    return res.status(400).json({
+      success: false,
+      error: "No es un ID válido",
+    });
+  }
+
+  // si no informamos en el body alguno de las propiedades necesarias, lanzamos error
+  if (!req.body.nombre && !req.body.nacionalidad) {
+    return res.status(400).json({
+      success: false,
+      error: "Debes proporcionar al menos nombre o nacionalidad",
+    });
+  }
+
+  const conn = await getConnection();
+
+  try {
+    // vamos modificando el sql update a medida que llegan los parametros
+    let updateAutor = "UPDATE autores SET ";
+    // vamos añadiendo en este array los parámetros
+    const params = [];
+
+    // si en el body viene informado el nombre, hacemos update del mismo
+    if (req.body.nombre) {
+      updateAutor += "nombre = ?";
+      params.push(req.body.nombre);
+    }
+
+    // si en el body viene informado la nacionalidad, hacemos update de la misma
+    if (req.body.nacionalidad) {
+      if (params.length > 0) {
+        updateAutor += ", ";
+      }
+      updateAutor += "nacionalidad = ?";
+      params.push(req.body.nacionalidad);
+    }
+
+    updateAutor += " WHERE id = ?";
+    params.push(req.params.id);
+
+    const [resultUpdateAutor] = await conn.execute(updateAutor, params);
+
+    // si el autor no existe devolvemos error
+    if (resultUpdateAutor.affectedRows === 0) {
+      await conn.end();
+      return res.status(404).json({
+        success: false,
+        error: "Autor no encontrado",
+      });
+    }
+
+    await conn.end();
+
+    res.json({
+      success: true,
+      message: "Autor actualizado correctamente",
+    });
+  } catch (error) {
+    console.error(error);
+
+    await conn.end();
+
+    res.status(500).json({
+      success: false,
+      error: "Error en la base de datos",
+    });
+  }
+});
