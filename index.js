@@ -169,18 +169,43 @@ app.put("/api/authors/:id", async (req, res) => {
       updateAutor += "nacionalidad = ?";
       params.push(req.body.nacionalidad);
     }
+  } catch (error) {
+    console.error(error);
 
-    updateAutor += " WHERE id = ?";
-    params.push(req.params.id);
+    await conn.end();
 
-    const [resultUpdateAutor] = await conn.execute(updateAutor, params);
+    res.status(500).json({
+      success: false,
+      error: "Error en la base de datos",
+    });
+  }
+});
 
-    // si el autor no existe devolvemos error
-    if (resultUpdateAutor.affectedRows === 0) {
+app.delete("/api/books/:id", async (req, res) => {
+  console.log("DELETE /api/books/:id");
+
+  if (isNaN(parseInt(req.params.id))) {
+    return res.status(400).json({
+      success: false,
+      error: "No es un ID válido",
+    });
+  }
+
+  const conn = await getConnection();
+
+  try {
+    const deleteBook = `
+      DELETE FROM libros
+      WHERE id = ?;
+    `;
+
+    const [resultDeleteBook] = await conn.execute(deleteBook, [req.params.id]);
+
+    if (resultDeleteBook.affectedRows === 0) {
       await conn.end();
       return res.status(404).json({
         success: false,
-        error: "Autor no encontrado",
+        error: "Libro no encontrado",
       });
     }
 
@@ -188,7 +213,7 @@ app.put("/api/authors/:id", async (req, res) => {
 
     res.json({
       success: true,
-      message: "Autor actualizado correctamente",
+      message: "Libro eliminado correctamente",
     });
   } catch (error) {
     console.error(error);
