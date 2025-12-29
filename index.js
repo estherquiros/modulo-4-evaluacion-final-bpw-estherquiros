@@ -78,3 +78,52 @@ LEFT JOIN autores ON autores.id = libros.autor_id
     books: resultados,
   });
 });
+
+app.post("/api/authors", async (req, res) => {
+  console.log("POST /api/authors");
+
+  if (!req.body.nombre) {
+    return res.status(400).json({
+      success: false,
+      error: "Falta el nombre",
+    });
+  }
+
+  if (!req.body.nacionalidad) {
+    return res.status(400).json({
+      success: false,
+      error: "Falta la nacionalidad",
+    });
+  }
+
+  const conn = await getConnection();
+
+  try {
+    const insertAutor = `
+      INSERT INTO autores (nombre, nacionalidad)
+      VALUES (?, ?);
+    `;
+
+    const [resultInsertAutor] = await conn.execute(insertAutor, [
+      req.body.nombre,
+      req.body.nacionalidad,
+    ]);
+
+    await conn.end();
+
+    res.json({
+      success: true,
+      autorId: resultInsertAutor.insertId,
+      message: "Autor insertado correctamente",
+    });
+  } catch (error) {
+    console.error(error);
+
+    await conn.end();
+
+    res.status(500).json({
+      success: false,
+      error: "Error en la base de datos",
+    });
+  }
+});
